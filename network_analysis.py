@@ -62,6 +62,7 @@ class network_analysis:
             print(f"unexpected {err=}, {type(err)=}")
     def create_visual_graph(self, relationships_df):
         try:
+
             # create graph from pandas dataframe
             G = nx.from_pandas_edgelist(relationships_df,
                                         source="source",
@@ -72,17 +73,18 @@ class network_analysis:
             colors = ['#008B8B', 'b', 'orange', 'y', 'c', 'DeepPink', '#838B8B', 'purple', 'olive', '#A0CBE2',
                       '#4EEE94'] * 50
             colors = colors[0:len(G.nodes())]
-            na.draw_networkx(G, 1,colors)
+            na.draw_networkx(G, 1,colors,'No Community Detection')
 
             self.louvain_com(G)
             self.newman_com(G)
         except Exception as err:
             print(f"unexpected {err=}, {type(err)=}")
-    def draw_networkx(self, G, fig, colors):
+    def draw_networkx(self, G, fig, colors, title_text):
 
         try:
             plt.figure(fig, figsize=(15, 10), dpi=400)
-
+            ax = plt.gca()
+            ax.set_title(title_text)
             nx.draw_networkx(G, pos=nx.spring_layout(G),  # Use the spring layout for positioning nodes
                              node_color=colors,  # Specify node colors
                              edge_color=colors,  # Specify edge colors
@@ -91,8 +93,7 @@ class network_analysis:
                              font_size=2,  # Font size for node labels
                              alpha=0.95,  # Transparency level
                              width=0.3,  # Width of the edges
-                             font_weight=9
-
+                             font_weight=9.
                              )
             plt.axis('off')
             plt.show()
@@ -107,7 +108,7 @@ class network_analysis:
 
             colors = []
             colors = ["#EDE1AF" if node in node_groups[0] else "#CABB9E" for node in G]
-            na.draw_networkx(G, 4, colors)
+            na.draw_networkx(G, 4, colors, 'Newman Community')
         except Exception as err:
             print(f"unexpected {err=}, {type(err)=}")
 
@@ -116,9 +117,12 @@ class network_analysis:
             communities = community_louvain.best_partition(G)
             nx.set_node_attributes(G, communities, 'group')
             colors = []
-            colors = ["#EDE1AF" if v == 1 else ("#CABB9E" if v == 2 else ("#CAE2EC" if v == 3 else ("#A9CCA9" if v ==4 else
-                                                                                                    ("#AECFDF" if v ==5 else "#D8D2C2")))) for k,v in communities.items()]
-            na.draw_networkx(G, 4, colors)
+            colors = ["#EDE1AF" if v == 1 else ("#CABB9E" if v == 2 else ("#CAE2EC" if v == 3
+                                                                          else ("#A9CCA9" if v ==4
+                                                                                else ("#AECFDF" if v ==5
+                                                                                      else "#D8D2C2")))) for k,v in communities.items()]
+
+            na.draw_networkx(G, 4, colors,'Louvain Community')
 
         except Exception as err:
             print(f"unexpected {err=}, {type(err)=}")
@@ -139,6 +143,7 @@ if __name__ == "__main__":
     # create relationships
     print("Creating relationship in progress...")
     relationships_df = fn.create_relationships(sent_entity_df_filtered, window_size=5)
+
     print("Creating relationship completed.")
 
     na.create_visual_graph(relationships_df)
